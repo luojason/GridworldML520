@@ -43,7 +43,7 @@ public class Test {
         SearchAlgo aso = new AStarSearch(Heuristics::manhattanDistance);
         Tuple<Integer, Integer> start = new Tuple<>(0, 0);
         Tuple<Integer, Integer> end = new Tuple<>(x-1, y-1);
-        Robot robot = new Robot(start, end, true, world, aso);
+        Robot robot = new Robot(start, end, true, world, aso, false);
         GridWorldInfo result = robot.run();
         printResults(result, world, robot, cell -> cell.isBlocked());
         System.out.println();

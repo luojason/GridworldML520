@@ -13,8 +13,9 @@ public class Robot {
     private HashSet<GridCell> free;
     private Grid grid;
     private SearchAlgo searchAlgo;
+    private boolean verbose; // whether to output state data at each step
 
-    public Robot(Tuple<Integer, Integer> start, Tuple<Integer, Integer> goal, boolean canSeeSideways, Grid grid, SearchAlgo searchAlgo) {
+    public Robot(Tuple<Integer, Integer> start, Tuple<Integer, Integer> goal, boolean canSeeSideways, Grid grid, SearchAlgo searchAlgo, boolean verbose) {
         this.current = start;
         this.restartPoint = this.current;
         this.goal = goal;
@@ -24,6 +25,7 @@ public class Robot {
         this.free.add(grid.getCell(start)); // start cell is always known/assumed to be free
         this.grid = grid;
         this.searchAlgo = searchAlgo;
+        this.verbose = verbose;
     }
 
     public Tuple<Integer, Integer> getLocation() {
@@ -81,6 +83,12 @@ public class Robot {
     private int runPath(List<Tuple<Integer, Integer>> path, int backtrackDistance) {
         int numStepsTaken = 0;
         for(Tuple<Integer, Integer> position : path) {
+            // output data
+            if(verbose) {
+                printGridState();
+                System.err.println(getDirectionCode(position));
+            }
+
             if(canSeeSideways) { // update obstacles based on fov
                 ArrayList<Tuple<Integer, Integer>> directions = new ArrayList<>(4);
                 directions.add(new Tuple<>(current.f1 + 1, current.f2)); // right
@@ -139,5 +147,57 @@ public class Robot {
         }
 
         return gridWorldInfoGlobal;
+    }
+
+    /**
+     * Outputs grid state to stdout.
+     */
+    public void printGridState() {
+        for(int y = 0; y < getGrid().getYSize(); y++) {
+            for(int x = 0; x < getGrid().getXSize(); x++) {
+                Tuple<Integer, Integer> pt = new Tuple<>(x, y);
+                if(pt.equals(current)) {
+                    System.out.print("2 ");
+                } else if(pt.equals(goal)) {
+                    System.out.print("3 ");
+                } else {
+                    GridCell cell = getGrid().getCell(pt);
+                    if(getKnownFreeSpaces().contains(cell)) {
+                        System.out.print("1 ");
+                    } else if(getKnownObstacles().contains(cell)) {
+                        System.out.print("-1 ");
+                    } else {
+                        System.out.print("0 ");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns code associated with robot decision.
+     * 
+     * @param pt New point the robot is moving to
+     * @return Direction code associated with the motion
+     * @throws IllegalArgumentException If pt is not reachable from the current location in one step
+     */
+    public String getDirectionCode(Tuple<Integer, Integer> pt) throws IllegalArgumentException {
+        int dx = pt.f1 - current.f1;
+        int dy = pt.f2 - current.f2;
+        if(Math.abs(dx) + Math.abs(dy) != 1) {
+            throw new IllegalArgumentException("pt must be adjacent to current location");
+        }
+        String result = null;
+        if(dy == -1) {
+            result = "0";
+        } else if(dy == 1) {
+            result = "2";
+        }
+        if(dx == -1) {
+            result = "3";
+        } else if(dx == 1) {
+            result = "1";
+        }
+        return result;
     }
 }
