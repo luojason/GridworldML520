@@ -16,6 +16,7 @@ public class Robot {
     private DecisionAgent agent;
     private Grid kb; // knowledge base
     private SearchAlgo searchAlgo;
+    private boolean verbose;
     private static final double NANO_SECONDS = 1000000000d;
 
     // track some runtime statistics
@@ -34,11 +35,12 @@ public class Robot {
      * @param grid       The initial knowledge base
      * @param searchAlgo The algorithm used to path-plan
      */
-    public Robot(Point start, DecisionAgent agent, Grid grid, SearchAlgo searchAlgo) {
+    public Robot(Point start, DecisionAgent agent, Grid grid, SearchAlgo searchAlgo, boolean verbose) {
         this.current = start;
         this.agent = agent;
         this.kb = grid;
         this.searchAlgo = searchAlgo;
+        this.verbose = verbose;
         
         // set default values
         this.numStepsTaken = 0;
@@ -47,6 +49,7 @@ public class Robot {
         this.numExaminations = 0;
 
         // do some initial setup
+        this.kb.renormalize();
         this.kb.getCell(start).setVisited(true); // is currently visiting the start cell
         this.destination = this.agent.getDestination(this.kb, start, start);
     }
@@ -91,6 +94,12 @@ public class Robot {
      */
     private boolean runPath(List<Point> path) {
         for (Point position : path) {
+            // output data
+            if(verbose) {
+                System.out.print(getGridState());
+                System.err.print(getDirectionCode(position));
+            }
+
             GridCell nextCell = kb.getCell(position);
             
             // attempt to move into next space
@@ -98,6 +107,7 @@ public class Robot {
             if (nextCell.isBlocked()) {
                 this.numBumps++;
                 nextCell.setProbGoal(0.0); // update probability
+                kb.renormalize();
                 return false;
             } else {
                 this.numStepsTaken++;
@@ -106,8 +116,17 @@ public class Robot {
 
             // decide whether to examine the current cell
             if (current.equals(destination) || agent.doExamine(kb, current, destination)) {
+                // output data
+                if(verbose) {
+                    System.out.print(getGridState());
+                    System.err.print(5);
+                    System.err.print(' ');
+                }
+
                 this.numExaminations++;
-                if (examineTerrain(nextCell)) return true; // examination successful
+                boolean result = examineTerrain(nextCell);
+                kb.renormalize();
+                if (result) return true; // examination successful
             }
         }
         return false;
@@ -147,6 +166,7 @@ public class Robot {
                 // no path to destination is possible -> invalidate this destination
                 if(result.f1 == null) {
                     kb.getCell(destination).setProbGoal(0.0); // update probability
+                    kb.renormalize();
                     break;
                 }
 
@@ -167,5 +187,64 @@ public class Robot {
         gridWorldInfoGlobal.numPlans = this.numPlans;
 
         return gridWorldInfoGlobal;
+    }
+
+    public String getGridState() {
+        StringBuilder sb = new StringBuilder();
+        for(GridCell cell : kb.getGrid()) { // output terrain grid
+            int state = 2;
+            if(cell.isVisited()) {
+                switch (cell.getTerrain()) {
+                    case Blocked:
+                        state = 0;
+                        break;
+                    case Forest:
+                        state = 1;
+                        break;
+                    case Hilly:
+                        state = 3;
+                        break;
+                    case Flat:
+                        state = 4;
+                }
+            }
+            if(cell.getLocation().equals(current)) {
+                state *= -1;
+            }
+            sb.append(state);
+            sb.append(' ');
+        }
+        for(GridCell cell : kb.getGrid()) { // output probabilities
+            sb.append(cell.getProbGoal());
+            sb.append(' ');
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Returns code associated with robot decision.
+     * 
+     * @param pt New point the robot is moving to
+     * @return Direction code associated with the motion
+     * @throws IllegalArgumentException If pt is not reachable from the current location in one step
+     */
+    public String getDirectionCode(Point pt) throws IllegalArgumentException {
+        int dx = pt.f1 - current.f1;
+        int dy = pt.f2 - current.f2;
+        if(Math.abs(dx) + Math.abs(dy) != 1) {
+            throw new IllegalArgumentException("pt must be adjacent to current location");
+        }
+        String result = null;
+        if(dy == -1) {
+            result = "0 ";
+        } else if(dy == 1) {
+            result = "2 ";
+        }
+        if(dx == -1) {
+            result = "3 ";
+        } else if(dx == 1) {
+            result = "1 ";
+        }
+        return result;
     }
 }
