@@ -98,7 +98,7 @@ public class Test {
         InferenceAgent perfectAgent = new PerfectInferenceAgent();
 
         System.out.println("Prob version:");
-        Robot robotp = new Robot(start, goal, agent, world, algo2);
+        Robot robotp = new Robot(start, goal, agent, world, algo2, false);
         GridWorldInfo resultp = robotp.run();
         printResults(resultp);
         printWorld(world);
@@ -106,7 +106,7 @@ public class Test {
         System.out.println();
 
         System.out.println("Example version:");
-        Robot robot = new Robot(start, goal, agent, world, algo);
+        Robot robot = new Robot(start, goal, agent, world, algo, false);
         GridWorldInfo result = robot.run();
         printResults(result);
         printWorld(world);
@@ -115,14 +115,14 @@ public class Test {
         System.out.println();
 
         System.out.println("'Better' version:");
-        Robot robot2 = new Robot(start, goal, betterAgent, world2, algo);
+        Robot robot2 = new Robot(start, goal, betterAgent, world2, algo, false);
         GridWorldInfo result2 = robot2.run();
         printResults(result2);
         printWorld(world2);
         System.out.println();
 
         System.out.println("'Perfect' version:");
-        Robot robot3 = new Robot(start, goal, perfectAgent, world3, algo);
+        Robot robot3 = new Robot(start, goal, perfectAgent, world3, algo, false);
         GridWorldInfo result3 = robot3.run();
         printResults(result3);
         printWorld(world3);

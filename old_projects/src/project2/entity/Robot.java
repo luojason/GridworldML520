@@ -15,8 +15,10 @@ public class Robot {
     private Point current;
     private Point goal;
     private InferenceAgent agent;
+    private Grid cleanKB; // copy of knowledge without robot's inferences
     private Grid kb; // knowledge base
     private SearchAlgo searchAlgo;
+    private boolean verbose;
     private static double NANO_SECONDS = 1000000000d;
 
     /**
@@ -29,13 +31,16 @@ public class Robot {
      * @param grid       The initial knowledge base
      * @param searchAlgo The algorithm used to path-plan
      */
-    public Robot(Point start, Point goal, InferenceAgent agent, Grid grid, SearchAlgo searchAlgo) {
+    public Robot(Point start, Point goal, InferenceAgent agent, Grid grid, SearchAlgo searchAlgo, boolean verbose) {
         this.current = start;
         this.goal = goal;
         this.agent = agent;
         this.kb = grid;
+        this.cleanKB = new Grid(grid, true);
         this.searchAlgo = searchAlgo;
+        this.verbose = verbose;
 
+        cleanKB.setSentiment(start, Sentiment.Free);
         kb.setSentiment(start, Sentiment.Free); // the agent starts off knowing that the start is unblocked
         kb.setCell(start).setVisited(true);
         this.agent.learn(this.kb, this.current);
@@ -77,14 +82,25 @@ public class Robot {
             Point position = path.get(0);
             GridCell nextCell = kb.getCell(position);
 
+            // output data
+            if(verbose) {
+                System.out.print(getGridState());
+                System.err.println(getDirectionCode(position));
+            }
+
             // attempt to move into next space,
             // and update KB accordingly based on if cell was blocked or empty
             if (nextCell.isBlocked()) {
+                cleanKB.setSentiment(position, Sentiment.Blocked);
                 kb.setSentiment(position, Sentiment.Blocked);
                 bumped = true;
             } else {
+                cleanKB.setSentiment(position, Sentiment.Free);
                 kb.setSentiment(position, Sentiment.Free);
+
                 move(position);
+
+                cleanKB.getCell(position).setVisited(true);
                 nextCell.setVisited(true); // mark cell as visited (implies we've sensed the info in that cell)
                 numStepsTaken++;
                 path.remove(0);
@@ -144,5 +160,57 @@ public class Robot {
         }
 
         return gridWorldInfoGlobal;
+    }
+
+    /**
+     * Formats grid state as a string
+     * 
+     * @return string representation of (clean) knowledge base
+     */
+    public String getGridState() {
+        StringBuilder sb = new StringBuilder();
+        for(GridCell cell : cleanKB.getGrid()) { // first layer - occupancy info
+            Point p = cell.getLocation();
+            if(p.equals(current)) {
+                sb.append(2);
+            } else if(p.equals(goal)) {
+                sb.append(3);
+            } else {
+                sb.append(cell.getBlockSentiment().getSentiment());
+            }
+            sb.append(' ');
+        }
+        for(GridCell cell : cleanKB.getGrid()) { // second layer - sensory info
+            sb.append(cell.isVisited() ? cell.getNumSensedBlocked() : 0);
+            sb.append(' ');
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Returns code associated with robot decision.
+     * 
+     * @param pt New point the robot is moving to
+     * @return Direction code associated with the motion
+     * @throws IllegalArgumentException If pt is not reachable from the current location in one step
+     */
+    public String getDirectionCode(Point pt) throws IllegalArgumentException {
+        int dx = pt.f1 - current.f1;
+        int dy = pt.f2 - current.f2;
+        if(Math.abs(dx) + Math.abs(dy) != 1) {
+            throw new IllegalArgumentException("pt must be adjacent to current location");
+        }
+        String result = null;
+        if(dy == -1) {
+            result = "0";
+        } else if(dy == 1) {
+            result = "2";
+        }
+        if(dx == -1) {
+            result = "3";
+        } else if(dx == 1) {
+            result = "1";
+        }
+        return result;
     }
 }
