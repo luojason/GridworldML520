@@ -85,7 +85,7 @@ public class Robot {
             // output data
             if(verbose) {
                 System.out.print(getGridState());
-                System.err.println(getDirectionCode(position));
+                System.err.print(getDirectionCode(position));
             }
 
             // attempt to move into next space,
@@ -202,14 +202,14 @@ public class Robot {
         }
         String result = null;
         if(dy == -1) {
-            result = "0";
+            result = "0 ";
         } else if(dy == 1) {
-            result = "2";
+            result = "2 ";
         }
         if(dx == -1) {
-            result = "3";
+            result = "3 ";
         } else if(dx == 1) {
-            result = "1";
+            result = "1 ";
         }
         return result;
     }
