@@ -121,7 +121,7 @@ public class Robot {
                 // output data
                 if(verbose && Math.random()*100 < keep) {
                     System.out.print(getGridState());
-                    System.err.print(5);
+                    System.err.print(4);
                     System.err.print(' ');
                 }
 
