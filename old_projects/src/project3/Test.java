@@ -75,13 +75,13 @@ public class Test {
 
         Point start = new Point(0, 0);
         
-        Robot bot1 = new Robot(start, new Agent6(), new Grid(world, true), algo, false);
+        Robot bot1 = new Robot(start, new Agent6(), new Grid(world, true), algo, false, 1);
         GridWorldInfo info1 = bot1.run();
 
-        Robot bot2 = new Robot(start, new Agent7(), new Grid(world, true), algo, false);
+        Robot bot2 = new Robot(start, new Agent7(), new Grid(world, true), algo, false, 1);
         GridWorldInfo info2 = bot2.run();
 
-        Robot bot3 = new Robot(start, new Agent8(), new Grid(world, true), algo, false);
+        Robot bot3 = new Robot(start, new Agent8(), new Grid(world, true), algo, false, 1);
         GridWorldInfo info3 = bot3.run();
 
         printResults(info1);

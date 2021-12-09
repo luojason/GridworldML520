@@ -17,6 +17,7 @@ public class Robot {
     private Grid kb; // knowledge base
     private SearchAlgo searchAlgo;
     private boolean verbose;
+    private double keep; // what percentage of the samples to keep
     private static final double NANO_SECONDS = 1000000000d;
 
     // track some runtime statistics
@@ -35,12 +36,13 @@ public class Robot {
      * @param grid       The initial knowledge base
      * @param searchAlgo The algorithm used to path-plan
      */
-    public Robot(Point start, DecisionAgent agent, Grid grid, SearchAlgo searchAlgo, boolean verbose) {
+    public Robot(Point start, DecisionAgent agent, Grid grid, SearchAlgo searchAlgo, boolean verbose, double keep) {
         this.current = start;
         this.agent = agent;
         this.kb = grid;
         this.searchAlgo = searchAlgo;
         this.verbose = verbose;
+        this.keep = keep;
         
         // set default values
         this.numStepsTaken = 0;
@@ -95,7 +97,7 @@ public class Robot {
     private boolean runPath(List<Point> path) {
         for (Point position : path) {
             // output data
-            if(verbose) {
+            if(verbose && Math.random()*100 < keep) {
                 System.out.print(getGridState());
                 System.err.print(getDirectionCode(position));
             }
@@ -117,7 +119,7 @@ public class Robot {
             // decide whether to examine the current cell
             if (current.equals(destination) || agent.doExamine(kb, current, destination)) {
                 // output data
-                if(verbose) {
+                if(verbose && Math.random()*100 < keep) {
                     System.out.print(getGridState());
                     System.err.print(5);
                     System.err.print(' ');
