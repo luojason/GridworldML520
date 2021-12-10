@@ -18,7 +18,7 @@ public class Main {
 
         for(int i = 0; i < iterations; i++) {
             Grid world = getSolvableMaze(x, y, algo, 30);
-            Robot rob = new Robot(start, end, true, world, algo, true);
+            Robot rob = new Robot(start, end, false, world, algo, true);
             rob.run();
         }
     }
