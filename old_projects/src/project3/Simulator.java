@@ -49,20 +49,26 @@ public class Simulator {
             for(int x = 0; x < world.getXSize(); x++) {
                 Point pt = new Point(x, y);
                 GridCell cell = world.getCell(pt);
+                int code = 0;
                 switch (cell.getTerrain()) {
                     case Blocked:
-                        System.out.print("0 ");
+                        code = 0;
                         break;
                     case Forest:
-                        System.out.print("1 ");
+                        code = 1;
                         break;
                     case Hilly:
-                        System.out.print("3 ");
+                        code = 3;
                         break;
                     case Flat:
-                        System.out.print("4 ");
+                        code = 4;
                         break;
                 }
+                if (cell.isGoal()) {
+                    code *= -1;
+                }
+                System.out.print(code);
+                System.out.print(" ");
             }
         }
     }
